@@ -57,7 +57,7 @@ def _mandelbrot(C, pos, I, split_from, iter, is_print):
 if __name__=="__main__":
     import cv2
     c = -0.48109+0.614645j
-    r = 0.000005
+    r = 5e-6
     #c = 0.5+0j
     #r = 1
     iter = int(1e7)

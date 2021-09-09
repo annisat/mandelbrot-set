@@ -53,13 +53,21 @@ def mandelbrot(center, res, size, iter=int(1e4), num_workers=1):
          ], axis=-1)
         
 def _mandelbrot(C, pos, I, split_from, iter, is_print):
+    # Moving values initialized
     Z = np.zeros_like(C)
+    # Since C is only a splited part, pos must be updated for the split I
     pos[:,1]-=split_from
+    ''' to-do: show the progress of the slowest thread only '''
     for iter_cnt in tqdm(range(iter)) if is_print else range(iter):
+        # Update values according to the rules of Mandelbrot set
         Z = np.square(Z)+C
+        # Criterion of divergence
         diverged = np.abs(Z)>2
         if not any(diverged): continue
+        # Newly diverged points are found:
+        # "Draw" I with the number of iteration
         for pos_to_draw in pos[diverged, :]: I[pos_to_draw[0], pos_to_draw[1]] = iter_cnt+1
+        # Remove diverged points from Z, C, and pos, for faster future calculation
         Z = np.delete(Z, diverged, axis=0)
         C = np.delete(C, diverged, axis=0)
         pos = np.delete(pos, diverged, axis=0)

@@ -1,4 +1,4 @@
-import cv2
+import cv2, os
 from pathlib import Path
 from tqdm import tqdm
 
@@ -21,25 +21,28 @@ def fit_resolution(img, width, height):
 
 
 
-### Source images
-source_path = Path('animation')
+### Basic setting
 width, height = 1280, 720
-path_list = list(source_path.iterdir())#[::3]
+fps = 40
+pref_path = Path("D://data/md_ckpt")
+folder_list = ['cDp1','cAp1','cAp2','cBp2','cBp3','cCp3','cCp4','cDp4']
 
+def make_section(writer, fd, into=True, end_frame=0):
+    fn_list = [fn for fn in fd.iterdir() if fn.suffix in ['.jpg', '.png']]
+    if not into: fn_list = fn_list[::-1]
+    for fn in tqdm(fn_list, ncols=100):
+        img = cv2.imread(str(fn))
+        img = fit_resolution(img, width, height)
+        writer.write(img)
+    for i in range(end_frame): writer.write(img)
 
 
 ### Making pretty video
-writer = cv2.VideoWriter('mandelreise.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 20, (width, height))
-for image in tqdm(path_list):
-    if not image.suffix == '.jpg': continue
-    img = cv2.imread(str(image))
-    img = fit_resolution(img, width, height)
-    writer.write(img)
-for image in tqdm(path_list[::-1]):
-    if not image.suffix == '.jpg': continue
-    img = cv2.imread(str(image))
-    img = fit_resolution(img, width, height)
-    writer.write(img)
+writer = cv2.VideoWriter('temp.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+
+for fd_i, fd_o in zip(folder_list[::2], folder_list[1::2]):
+    make_section(writer, pref_path/fd_i, end_frame=int(fps*2))
+    make_section(writer, pref_path/fd_o, into=False)
     
 writer.release()
 
